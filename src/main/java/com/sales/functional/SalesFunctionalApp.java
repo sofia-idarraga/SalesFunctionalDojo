@@ -1,10 +1,17 @@
 package com.sales.functional;
 
 import com.sales.functional.database.Database;
+import com.sales.functional.entities.Customer;
+import com.sales.functional.entities.Product;
 import com.sales.functional.entities.Sale;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class SalesFunctionalApp {
     static ArrayList<Sale> sales = Database.loadDatabase();
@@ -30,6 +37,9 @@ public class SalesFunctionalApp {
 
     public static void loadMenu(){
         Scanner sc = new Scanner(System.in);
+        //System.out.println(sales);
+        dojoSolution();
+        /*
         menu();
         System.out.print("Type option: ");
         String op=sc.nextLine();
@@ -54,7 +64,11 @@ public class SalesFunctionalApp {
                 break;
             default:
                 System.out.println("Invalid input. Try again.");
+
+
         }
+
+         */
 
     }
 
@@ -79,4 +93,49 @@ public class SalesFunctionalApp {
     //9. Get how many men and women uses the coupon
 
     //10. Get the customers that spent more and less.
+
+    // 11. How many customers have a laptop in their items list? What is the customer that paid more for it?
+    //Expected output: Total of customers and the mail of the customer that paid more.
+    public static void dojoSolution(){
+        Predicate<Product> haveLaptop = product -> product.getName().equals("laptop");
+/*
+        int count =
+
+        sales.stream()
+                .map(sale -> sale.getItems())
+                .filter(products -> products.stream().anyMatch(haveLaptop))
+                .collect(Collectors.toList())
+                .size();
+*/
+
+
+     //   Long count=
+        List<Sale> salesWithLaptop=
+      sales.stream().filter(
+                sale -> sale.getItems().stream()
+                        .anyMatch(product -> product.getName().equals("laptop"))
+        ).collect(Collectors.toList());
+
+        Optional<Double> higherPrice=
+        salesWithLaptop.stream()
+                .map(sale -> sale.getItems().stream().filter(
+                        product -> product.getName().equals("laptop")))
+                .flatMap(productStream -> productStream.map(product -> product.getPrice()))
+                .collect(Collectors.toList()).stream()
+                .max(Double::compare);
+
+        List<String> email=
+        salesWithLaptop.stream().filter(
+                sale -> sale.getItems().stream().anyMatch(
+                        product -> product.getName().equals("laptop") && product.getPrice().equals(higherPrice.get())
+                ))
+                        .map(sale -> sale.getCustomer().getEmail()).collect(Collectors.toList());
+
+
+
+
+        System.out.println("Total of customers: "+salesWithLaptop.size());
+        System.out.println(higherPrice.get());
+        System.out.println("mail of the customer that paid more"+email);
+    }
 }
